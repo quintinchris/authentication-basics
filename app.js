@@ -10,7 +10,7 @@ const Schema = mongoose.Schema;
 
 require('dotenv').config();
 
-const mongoDb = 'mongodb+srv://authUser:authorized@auth-basics-cluster-hjxzv.mongodb.net/test?retryWrites=true&w=majority';
+const mongoDb = process.env.MONGODB_URL;
 mongoose.connect(mongoDb, { useUnifiedTopology: true, useNewUrlParser: true });
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
