@@ -4,12 +4,11 @@ const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+
 const Schema = mongoose.Schema;
 
 require('dotenv').config();
-
-const bcrypt = require("bcryptjs");
-const salt = bcrypt.genSaltSync(10);
 
 const mongoDb = 'mongodb+srv://authUser:authorized@auth-basics-cluster-hjxzv.mongodb.net/test?retryWrites=true&w=majority';
 mongoose.connect(mongoDb, { useUnifiedTopology: true, useNewUrlParser: true });
@@ -63,27 +62,6 @@ app.post("/sign-up", (req, res, next) => {
     })
 });
 
-
-
-
-
-    /*const user = new User({
-        username: req.body.username,
-        password: req.body.password
-    }).save(err => {
-        if (err) {
-            return next(err);
-        } else {
-        bcrypt.hash(user.password, salt, (err, hashedPassword) => {
-            if (err) {
-                return next(err);
-            }
-        });
-        res.redirect("/");
-        }
-    });
-});*/
-
 app.post(
     "/log-in",
     passport.authenticate("local", {
@@ -110,10 +88,6 @@ passport.use(
                     return done(null, false, {msg: "Incorrect password"})
                 }
             })
-            /*if (user.password != password) {
-                return done(null, false, { msg: "Incorrect password" });
-            }
-            return done(null, user);*/
         });
     })
 );
