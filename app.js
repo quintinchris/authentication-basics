@@ -5,11 +5,13 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const bcrypt = require("bcryptjs");
 
 require('dotenv').config();
 
-const mongoDb = process.env.MONGODB_URL;
+const bcrypt = require("bcryptjs");
+const salt = bcrypt.genSaltSync(10);
+
+const mongoDb = 'mongodb+srv://authUser:authorized@auth-basics-cluster-hjxzv.mongodb.net/test?retryWrites=true&w=majority';
 mongoose.connect(mongoDb, { useUnifiedTopology: true, useNewUrlParser: true });
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
@@ -49,22 +51,44 @@ app.get("/log-out", (req, res) => {
 });
 
 app.post("/sign-up", (req, res, next) => {
-    const user = new User({
+    bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
+        if (err) return next(err);
+        const user = new User({
+            username: req.body.username,
+            password: hashedPassword
+        }).save(err => {
+            if (err) return next(err);
+        res.redirect("/");
+        });
+    })
+});
+
+
+
+
+
+    /*const user = new User({
         username: req.body.username,
         password: req.body.password
-    }).save(bcrypt.hash("somePassword", 10, (err, hashedPassword) => {
+    }).save(err => {
         if (err) {
             return next(err);
-        }
+        } else {
+        bcrypt.hash(user.password, salt, (err, hashedPassword) => {
+            if (err) {
+                return next(err);
+            }
+        });
         res.redirect("/");
-    }));
-});
+        }
+    });
+});*/
 
 app.post(
     "/log-in",
     passport.authenticate("local", {
         successRedirect: "/",
-        failureRedirect: "/sign-up"
+        failureRedirect: "/"
     })
 );
 
@@ -79,8 +103,10 @@ passport.use(
             }
             bcrypt.compare(password, user.password, (err, res) => {
                 if (res) {
+                    // success!
                     return done(null, user);
                 } else {
+                    // error
                     return done(null, false, {msg: "Incorrect password"})
                 }
             })
